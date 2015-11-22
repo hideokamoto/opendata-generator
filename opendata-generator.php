@@ -39,6 +39,7 @@ class Opendata_generator {
   	 */
   	public function after_setup_theme() {
   		add_action( 'init'          , array( $this, 'register_post_type' ) );
+    	add_action( 'admin_menu'    , array( $this, 'admin_menu' ) );
   	}
 
   	/**
@@ -69,7 +70,29 @@ class Opendata_generator {
         'supports'        => array( 'title', 'page-attributes' ),
         'show_in_menu'    => false,
       );
-  		register_post_type( "sample", $args );
+  		register_post_type( ODG_Config::NAME, $args );
+  	}
+
+  	/**
+  	 * 管理画面にメニューを追加
+  	 */
+  	public function admin_menu() {
+  		add_menu_page(
+  			ODG_Config::DISPNAME,
+  			ODG_Config::DISPNAME,
+  			'manage_options',
+  			'edit.php?post_type=' . ODG_Config::NAME,
+  			false,
+  			false,
+  			'81'
+  		);
+  		add_submenu_page(
+  			'edit.php?post_type=' . ODG_Config::NAME,
+  			__( 'Add New', ODG_Config::NAME ),
+  			__( 'Add New', ODG_Config::NAME ),
+  			'manage_options',
+  			'post-new.php?post_type=' . ODG_Config::NAME
+  		);
   	}
 }
 new Opendata_generator();
