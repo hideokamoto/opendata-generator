@@ -1,4 +1,4 @@
-Make JSON-LD for WordPress With Custom Fields v1.5
+OpenData Generator v3.0alpha
 ============
 
 #このプラグインについて
@@ -9,9 +9,9 @@ ZIPファイルをDLし、WordPressのプラグインとしてインストール
 有効化することでJSON-LDファイルを出力するようになります。
 
 #JSON-LDのファイルパス
-- http://[ドメイン]/json-ld/：全記事分のJSON-LD
-- http://[ドメイン]/[カテゴリー名]/json-ld/：該当カテゴリ全記事分のJSON-LD
-- http://[ドメイン]/[固定ページ・投稿パーマリンク]/json-ld/：該当記事のJSON-LD
+- http://[ドメイン]/odg-jsonld/：全記事分のJSON-LD
+- http://[ドメイン]/[カテゴリー名]/odg-jsonld/：該当カテゴリ全記事分のJSON-LD
+- http://[ドメイン]/[固定ページ・投稿パーマリンク]/odg-jsonld/：該当記事のJSON-LD
 
 #記事の絞り込み方法について
 
@@ -86,4 +86,6 @@ GPLです。
 LICENSE.mdをご覧ください。
 
 #UpdateLog
+- 3.0 さらにリメイク
+- 2.0 リメイク（v1との後方互換性なし）
 - 1.5 WP_Queryのparamに対応
