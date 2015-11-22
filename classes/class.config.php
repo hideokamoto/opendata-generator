@@ -9,4 +9,9 @@ class ODG_Config {
    * display_name
    */
   const DISPNAME = 'Opendata Generator';
+
+  /**
+   * prefix
+   */
+  const PREFIX = 'odg-';
 }

@@ -77,22 +77,46 @@ class Opendata_generator {
   	 * 管理画面にメニューを追加
   	 */
   	public function admin_menu() {
-  		add_menu_page(
-  			ODG_Config::DISPNAME,
-  			ODG_Config::DISPNAME,
-  			'manage_options',
-  			'edit.php?post_type=' . ODG_Config::NAME,
-  			false,
-  			false,
-  			'81'
+      add_menu_page(
+          __(ODG_Config::DISPNAME, ODG_Config::NAME),
+          __(ODG_Config::DISPNAME, ODG_Config::NAME),
+          'administrator',
+          'odg-admin-menu',
+          array( $this, 'odg_admin_menu' ),
+    			false,
+    			'81'
+      );
+      add_submenu_page(
+          'odg-admin-menu',
+          __('Schema Settings', 'make_json_ld'),
+          __('Schema Settings', 'make_json_ld'),
+          'administrator',
+          'odg-schema',
+          array( $this, 'odg_schema' )
+      );
+  		add_submenu_page(
+        'odg-admin-menu',
+        __("Mapping List", ODG_Config::NAME),
+        __("Mapping List", ODG_Config::NAME),
+        'administrator',
+  			'edit.php?post_type=' . ODG_Config::NAME
   		);
   		add_submenu_page(
-  			'edit.php?post_type=' . ODG_Config::NAME,
-  			__( 'Add New', ODG_Config::NAME ),
-  			__( 'Add New', ODG_Config::NAME ),
-  			'manage_options',
+  			'odg-admin-menu',
+        __("Create Mapping", ODG_Config::NAME),
+        __("Create Mapping", ODG_Config::NAME),
+        'administrator',
   			'post-new.php?post_type=' . ODG_Config::NAME
   		);
   	}
+
+    public function odg_admin_menu(){
+      echo "string";
+    }
+
+    public function odg_schema(){
+      echo "string";
+    }
+
 }
 new Opendata_generator();
