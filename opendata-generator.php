@@ -21,6 +21,8 @@ class Opendata_generator {
     		require_once plugin_dir_path( __FILE__ ) . 'classes/class.config.php';
       	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.panels.php';
       	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.schema.php';
+        require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.mapping.php';
+        require_once plugin_dir_path( __FILE__ ) . 'classes/class.jsonld.content.php';
     		add_action( 'plugins_loaded', array( $this , 'plugins_loaded' ) );
         register_activation_hook( __FILE__ , array( $this , 'activation_callback' ) );
     		//register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
@@ -147,7 +149,6 @@ class Opendata_generator {
      * データの表示処理
      */
     public function odg_redirect() {
-    		require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.mapping.php';
         header("Access-Control-Allow-Origin: *");
 
         global $wp_query;
@@ -159,34 +160,30 @@ class Opendata_generator {
     }
 
     public function get_content() {
-        global $wp_query;
-        header('Content-type: application/ld+json; charset=UTF-8');
+
+        //Get Defined Mapping Data
         $Map = new ODG_Ep_Mapping();
-        $schema = $Map->get_Schema();
+        $mapped_schema_array = $Map->get_Schema();
 
-        //Create JSON LD
-        $content = $schema;
-        $arg = array(
-            "post_type" =>  'posts',
-            'posts_per_page' => 10
-        );
-        $WP_Content = new WP_Query( $arg );
-        if ( $WP_Content->have_posts()) {
-            while ( $WP_Content->have_posts() ) {
-                $WP_Content->the_post();
-                echo get_the_ID();
-            }
-        }
-        if ( have_posts()) {
-            while ( have_posts() ) {
-                the_post();
-                echo get_the_ID();
-                $post_meta[] = get_post_meta( get_the_ID() ) ;
-            }
+        //Set Content Type
+        header('Content-type: application/ld+json; charset=UTF-8');
+
+        //Get Content(JSON-LD)
+        $JSONLD_Cont = new ODG_JSONLD_Content();
+        $jsonld_content = $JSONLD_Cont->get_content( $mapped_schema_array );
+
+        if ( !$jsonld_content ) {
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            exit;
         }
 
-        $jsonld = $this->create_jsonld_graph( $content );
+        //Convert JSON-LD
+        $jsonld = $this->create_jsonld_graph( $jsonld_content );
         $jsonld = json_encode($jsonld, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+        //Show JSON-LD
         echo $jsonld;
         exit;
     }
@@ -201,4 +198,5 @@ class Opendata_generator {
     }
 
 }
+
 new Opendata_generator();
