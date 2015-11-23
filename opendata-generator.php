@@ -147,9 +147,14 @@ class Opendata_generator {
      * データの表示処理
      */
     public function odg_redirect() {
+  		require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.mapping.php';
       header("Access-Control-Allow-Origin: *");
       header('Content-type: application/ld+json; charset=UTF-8');
-      echo "fooo!";
+      global $wp_query;
+      $Map = new ODG_Ep_Mapping();
+      $Arg = $Map->get_Mappings();
+      $Map->mapping_test($Arg);
+
       exit;
     }
 
