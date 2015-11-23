@@ -42,7 +42,7 @@ class ODG_Admin_Panels {
         printf( "<h2>%s</h2>" , __( 'Make JSON-LD' , ODG_Config::NAME ) );
         printf( "<h3>%s</h3>" , __( 'Setting Vocabulary' , ODG_Config::NAME ) );
         echo "<form method='post' action='' novalidate='novalidate'>";
-        wp_nonce_field( 'my-nonce-key', 'odg-schema');
+        wp_nonce_field( 'odg-schema');
         echo "<table class='widefat form-table'><thead>";
         printf(
           "<tr><th>　%s</th><th>URI</th></tr>",
@@ -58,6 +58,7 @@ class ODG_Admin_Panels {
 
     private function get_schema_context( ) {
         $contexts = get_option('odg-context');
+
         if (!$contexts)
             $contexts[0] = array(
                 "type" =>"schema",
@@ -72,10 +73,10 @@ class ODG_Admin_Panels {
         $tbody = "<tbody>";
         foreach( $contexts as  $context ){
             if ( $context['type'] ) {
-                $input_type_name  = "context[{$i}][type]";
+                $input_type_name  = "odg-schema[{$i}][type]";
                 $input_type_value = esc_attr( $context['type'] );
-                $input_iri_name   = "context[{$i}][iri]";
-                $input_iri_value  = esc_attr( $context['iri'] );
+                $input_iri_name   = "odg-schema[{$i}][iri]";
+                $input_iri_value  = esc_url( $context['iri'] );
                 $tr  = "<tr>";
                 $tr .= "<td><input name='{$input_type_name}' type='text' id='vocabulary-{$i}' value='{$input_type_value}' class='regular-text code'></td>";
                 $tr .= "<td><input name='$input_iri_name' type='url' id='siteurl-{$i}' value='{$input_iri_value}' class='regular-text code'></td>";
@@ -85,8 +86,8 @@ class ODG_Admin_Panels {
             }
         }
         $tr  = "<tr>";
-        $tr .= "<td><input name='context[{$i}][type]' type='text' id='vocabulary-{$i}' value='' class='regular-text code'></td>";
-        $tr .= "<td><input name='context[{$i}][iri]' type='url' id='siteurl-{$i}' value='' class='regular-text code'></td>";
+        $tr .= "<td><input name='odg-schema[{$i}][type]' type='text' id='vocabulary-{$i}' value='' class='regular-text code'></td>";
+        $tr .= "<td><input name='odg-schema[{$i}][iri]' type='url' id='siteurl-{$i}' value='' class='regular-text code'></td>";
         $tr .="</tr>";
         $tbody .= $tr;
         $tbody .= "<tbody>";

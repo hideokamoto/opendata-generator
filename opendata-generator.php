@@ -19,7 +19,8 @@ class Opendata_generator {
   	 */
   	public function __construct() {
   		require_once plugin_dir_path( __FILE__ ) . 'classes/class.config.php';
-    	require_once plugin_dir_path( __FILE__ ) . 'classes/class.admin.panels.php';
+    	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.panels.php';
+    	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.schema.php';
   		add_action( 'plugins_loaded', array( $this, 'plugins_loaded' ) );
   		//register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
   	}
@@ -41,6 +42,7 @@ class Opendata_generator {
   	public function after_setup_theme() {
   		add_action( 'init'          , array( $this, 'register_post_type' ) );
     	add_action( 'admin_menu'    , array( $this, 'admin_menu' ) );
+      add_action( 'admin_init'    , array( $this, 'admin_init' ));
   	}
 
   	/**
@@ -112,6 +114,21 @@ class Opendata_generator {
   		);
   	}
 
+    public function admin_init () {
+
+        if( isset ( $_POST['odg-schema'] ) && $_POST['odg-schema'] ){
+            $Schema = new ODG_Admin_Schema();
+            $Schema->save_schema();
+        } elseif ( isset ( $_POST['odg-mapping'] ) && $_POST['odg-mapping'] ){
+            if( check_admin_referer( 'odg-mapping' ) ) {
+              $e = new WP_Error();
+              update_option( 'odg-mapping' , odg_check_mappings( ) );
+            } else {
+              update_option( 'odg-mapping' , '' );
+            }
+            wp_safe_redirect( menu_page_url( 'odg-mapping' , false ) );
+        }
+    }
 
 }
 new Opendata_generator();
