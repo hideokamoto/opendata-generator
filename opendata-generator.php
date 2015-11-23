@@ -19,7 +19,7 @@ class Opendata_generator {
   	 */
   	public function __construct() {
   		require_once plugin_dir_path( __FILE__ ) . 'classes/class.config.php';
-    	require_once plugin_dir_path( __FILE__ ) . 'classes/class.admin.top.php';
+    	require_once plugin_dir_path( __FILE__ ) . 'classes/class.admin.panels.php';
   		add_action( 'plugins_loaded', array( $this, 'plugins_loaded' ) );
   		//register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
   	}
@@ -78,23 +78,23 @@ class Opendata_generator {
   	 * 管理画面にメニューを追加
   	 */
   	public function admin_menu() {
-      $ODG_AdminTop = new ODG_Admin_Top();
+      $ODG_Admin_Panels = new ODG_Admin_Panels();
       add_menu_page(
           __(ODG_Config::DISPNAME, ODG_Config::NAME),
           __(ODG_Config::DISPNAME, ODG_Config::NAME),
           'administrator',
           'odg-admin-menu',
-          array( $ODG_AdminTop , 'odg_admin_menu' ),
+          array( $ODG_Admin_Panels , 'odg_admin_menu' ),
     			false,
     			'81'
       );
       add_submenu_page(
           'odg-admin-menu',
-          __('Schema Settings', 'make_json_ld'),
-          __('Schema Settings', 'make_json_ld'),
+          __('Schema Settings', ODG_Config::NAME),
+          __('Schema Settings', ODG_Config::NAME),
           'administrator',
           'odg-schema',
-          array( $this, 'odg_schema' )
+          array( $ODG_Admin_Panels, 'odg_admin_schema' )
       );
   		add_submenu_page(
         'odg-admin-menu',
@@ -112,9 +112,6 @@ class Opendata_generator {
   		);
   	}
 
-    public function odg_schema(){
-      echo "string";
-    }
 
 }
 new Opendata_generator();
