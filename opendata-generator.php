@@ -60,8 +60,8 @@ class Opendata_generator {
       * エンドポイントの追加
       */
      private function add_endpoint() {
-           add_rewrite_endpoint('odg-jsonld',EP_PERMALINK|EP_ROOT|EP_PAGES|EP_CATEGORIES);
-           add_rewrite_endpoint('odg-jsonld-context', EP_ROOT);
+        add_rewrite_endpoint('odg-jsonld',EP_PERMALINK|EP_ROOT|EP_PAGES|EP_CATEGORIES);
+        add_rewrite_endpoint('odg-jsonld-context', EP_ROOT);
      }
 
   	/**
@@ -149,35 +149,35 @@ class Opendata_generator {
     public function odg_redirect() {
   		require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.mapping.php';
       header("Access-Control-Allow-Origin: *");
-      header('Content-type: application/ld+json; charset=UTF-8');
-      global $wp_query;
-      $Map = new ODG_Ep_Mapping();
-      $Mappings = $Map->get_Mappings();
 
-      if( $Mappings->have_posts() ){
-          $i = 0;
-          while ( $Mappings->have_posts() ) {
-              $Mappings->the_post();
-              $post_meta = get_post_meta( get_the_ID() ) ;
-              foreach ($post_meta as $key => $value) {
-                  if ( ! preg_match( "%^_edit%" , $key ) ) {
-                      $schema[$i][$key] = $value[0];
-                  }
-              }
-              $i++;
-          }
-          $jsonld = $this->create_jsonld_graph( $schema );
-          $jsonld = json_encode($jsonld, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-          echo $jsonld;
+      global $wp_query;
+      if( in_array( 'odg-jsonld' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld'] ) ) {
+          $this->get_content();
+      } elseif ( in_array( 'odg-jsonld-context' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld-context'] ) ) {
+          $this->get_content();
       }
+    }
+
+    public function get_content() {
+      global $wp_query;
+      header('Content-type: application/ld+json; charset=UTF-8');
+      $Map = new ODG_Ep_Mapping();
+      $schema = $Map->get_Schema();
+
+      //Create JSON LD
+      $content = $schema;
+
+      $jsonld = $this->create_jsonld_graph( $content );
+      $jsonld = json_encode($jsonld, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+      echo $jsonld;
       exit;
     }
 
-    public function create_jsonld_graph( $schema ){
-        if( 1 < count( $schema ) ){
-            $jsonld['@graph'] = $schema;
+    public function create_jsonld_graph( $content ){
+        if( 1 < count( $content ) ){
+            $jsonld['@graph'] = $content;
         } else {
-            $jsonld = $schema;
+            $jsonld = $content;
         }
         return $jsonld;
     }

@@ -1,6 +1,24 @@
 <?php
 class ODG_Ep_Mapping {
 
+    public function get_Schema() {
+        $Mappings = $this->get_Mappings();
+        if( $Mappings->have_posts() ){
+            $i = 0;
+            while ( $Mappings->have_posts() ) {
+                $Mappings->the_post();
+                $post_meta = get_post_meta( get_the_ID() ) ;
+                foreach ($post_meta as $key => $value) {
+                    if ( ! preg_match( "%^_edit%" , $key ) ) {
+                        $schema[$i][$key] = $value[0];
+                    }
+                }
+                $i++;
+            }
+        }
+        return $schema;
+    }
+
     public function get_Mappings () {
         $map_arg = array(
           "post_type" =>  ODG_Config::NAME
