@@ -152,10 +152,34 @@ class Opendata_generator {
       header('Content-type: application/ld+json; charset=UTF-8');
       global $wp_query;
       $Map = new ODG_Ep_Mapping();
-      $Arg = $Map->get_Mappings();
-      $Map->mapping_test($Arg);
+      $Mappings = $Map->get_Mappings();
 
+      if( $Mappings->have_posts() ){
+          $i = 0;
+          while ( $Mappings->have_posts() ) {
+              $Mappings->the_post();
+              $post_meta = get_post_meta( get_the_ID() ) ;
+              foreach ($post_meta as $key => $value) {
+                  if ( ! preg_match( "%^_edit%" , $key ) ) {
+                      $schema[$i][$key] = $value[0];
+                  }
+              }
+              $i++;
+          }
+          $jsonld = $this->create_jsonld_graph( $schema );
+          $jsonld = json_encode($jsonld, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+          echo $jsonld;
+      }
       exit;
+    }
+
+    public function create_jsonld_graph( $schema ){
+        if( 1 < count( $schema ) ){
+            $jsonld['@graph'] = $schema;
+        } else {
+            $jsonld = $schema;
+        }
+        return $jsonld;
     }
 
 }

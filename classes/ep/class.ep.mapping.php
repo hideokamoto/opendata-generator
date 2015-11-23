@@ -5,9 +5,8 @@ class ODG_Ep_Mapping {
         $map_arg = array(
           "post_type" =>  ODG_Config::NAME
         );
-
-        $Map = new WP_Query( $map_arg );
-        return $Map;
+        $Mappings = new WP_Query( $map_arg );
+        return $Mappings;
       }
 
     public function mapping_test($Map) {
