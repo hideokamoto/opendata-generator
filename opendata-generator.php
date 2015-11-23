@@ -21,7 +21,8 @@ class Opendata_generator {
   		require_once plugin_dir_path( __FILE__ ) . 'classes/class.config.php';
     	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.panels.php';
     	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.schema.php';
-  		add_action( 'plugins_loaded', array( $this, 'plugins_loaded' ) );
+  		add_action( 'plugins_loaded', array( $this , 'plugins_loaded' ) );
+      register_activation_hook( __FILE__ , array( $this , 'activation_callback' ) );
   		//register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
   	}
   	/**
@@ -40,10 +41,28 @@ class Opendata_generator {
   	 * 各クラスの読み込み
   	 */
   	public function after_setup_theme() {
-  		add_action( 'init'          , array( $this, 'register_post_type' ) );
-    	add_action( 'admin_menu'    , array( $this, 'admin_menu' ) );
-      add_action( 'admin_init'    , array( $this, 'admin_init' ));
+  		add_action( 'init'             , array( $this, 'register_post_type' ) );
+      add_action( 'init'             , array( $this, 'add_endpoint' ) );
+    	add_action( 'admin_menu'       , array( $this, 'admin_menu' ) );
+      add_action( 'admin_init'       , array( $this, 'admin_init' ) );
+      add_action( 'template_redirect', array( $this, 'odg_redirect' ));
   	}
+
+    /**
+     * 有効化時の処理
+     */
+     private function activation_callback() {
+          $this->add_endpoint();
+          flush_rewrite_rules();
+     }
+
+     /**
+      * エンドポイントの追加
+      */
+     private function add_endpoint() {
+           add_rewrite_endpoint('odg-jsonld',EP_PERMALINK|EP_ROOT|EP_PAGES|EP_CATEGORIES);
+           add_rewrite_endpoint('odg-jsonld-context', EP_ROOT);
+     }
 
   	/**
   	 * カスタム投稿タイプの登録。メニュー表示は別メソッドで実行
@@ -114,20 +133,24 @@ class Opendata_generator {
   		);
   	}
 
+    /**
+     * 各種設定の保存処理
+     */
     public function admin_init () {
-
         if( isset ( $_POST['odg-schema'] ) && $_POST['odg-schema'] ){
             $Schema = new ODG_Admin_Schema();
             $Schema->save_schema();
-        } elseif ( isset ( $_POST['odg-mapping'] ) && $_POST['odg-mapping'] ){
-            if( check_admin_referer( 'odg-mapping' ) ) {
-              $e = new WP_Error();
-              update_option( 'odg-mapping' , odg_check_mappings( ) );
-            } else {
-              update_option( 'odg-mapping' , '' );
-            }
-            wp_safe_redirect( menu_page_url( 'odg-mapping' , false ) );
         }
+    }
+
+    /**
+     * データの表示処理
+     */
+    public function odg_redirect() {
+      header("Access-Control-Allow-Origin: *");
+      header('Content-type: application/ld+json; charset=UTF-8');
+      echo "fooo!";
+      exit;
     }
 
 }
