@@ -1,11 +1,28 @@
 <?php
 class ODG_JSONLD_Content {
 
-    public function get_content( $mapped_schema_array ) {
-        $arg = array(
-            "post_type" =>  'post',
+    private function get_query( ){
+        $query = array(
+            'post_type' =>'post',
             'posts_per_page' => 10
         );
+        if(isset($_GET['filter'])){
+            $query = $_GET['filter'];
+        }
+        if(!isset($query['posts_per_page'])){
+          $query['posts_per_page'] = -1;
+        }
+        /*
+        if(isset($wp_query->query_vars["category_name"])){
+          $query['category_name'] = $wp_query->query_vars["category_name"];
+        }
+        */
+        return $query;
+    }
+
+
+    public function get_content( $mapped_schema_array ) {
+        $arg = $this->get_query();
         $WP_Content = new WP_Query( $arg );
         if ( !$WP_Content->have_posts()) {
           return false;

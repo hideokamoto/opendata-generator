@@ -5,8 +5,8 @@ Tags: json-ld,opendata
 Requires at least: 4.1.2
 Tested up to: 4.3.2
 Stable tag: 3.0alpha
-License: GPLv3 or later
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Easy Make OpenData from WordPress CustomFields.
 
@@ -38,7 +38,6 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 - Support "@Graph" Parameter
 - Support Schema Mapping page
 - Only show Root content.
-- Feature resupport "WP_Query"
 
 = 2.0alpha =
 2015/11/21 Remake.
