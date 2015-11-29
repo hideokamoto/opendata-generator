@@ -9,7 +9,7 @@ class ODG_Ep_Mapping {
                 $Mappings->the_post();
                 $post_meta = get_post_meta( get_the_ID() ) ;
                 foreach ($post_meta as $key => $value) {
-                    if ( ! preg_match( "%^_edit%" , $key ) ) {
+                    if ( ! preg_match( "%^_%" , $key ) ) {
                         $schema[$i][$key] = $value[0];
                     }
                 }

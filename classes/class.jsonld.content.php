@@ -36,7 +36,7 @@ class ODG_JSONLD_Content {
                 foreach ($mapped_schema_array as $mapped_schema) {
                     foreach ($mapped_schema as $key => $schema) {
                         if ( isset( $post_meta[$key] ) && $post_meta[$key][0]) {
-                            $cont[$i][$j][$key] = $post_meta[$key][0];
+                            $cont[$i][$j][$schema] = $post_meta[$key][0];
                         }
                         if ( '@type' === $key ) {
                             $type = $schema;
