@@ -4,9 +4,9 @@ Donate link: https://note.mu/hideokamoto/n/nd0cecce0e758
 Tags: json-ld,opendata
 Requires at least: 4.1.2
 Tested up to: 4.3.2
-Stable tag: 2.0alpha
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 3.0alpha
+License: GPLv3 or later
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Easy Make OpenData from WordPress CustomFields.
 
@@ -18,16 +18,11 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 
 == Installation ==
 
-1. Upload `make-json-ld-master` directory to the `/wp-content/plugins/` directory
+1. Upload `opendata-generator` directory to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
 
-= How to get Custome Post Data  =
-
-Use WP_Query's parameter.
-
-see there -> http://codex.wordpress.org/Class_Reference/WP_Query
 
 
 == Screenshots ==
@@ -37,6 +32,13 @@ see there -> http://codex.wordpress.org/Class_Reference/WP_Query
 
 
 == Changelog ==
+
+= 3.0alpha =
+2015/11/29 Fully remake.
+- Support "@Graph" Parameter
+- Support Schema Mapping page
+- Only show Root content.
+- Feature resupport "WP_Query"
 
 = 2.0alpha =
 2015/11/21 Remake.

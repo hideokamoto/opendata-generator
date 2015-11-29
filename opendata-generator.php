@@ -1,12 +1,12 @@
 <?php
 /**
- * @package ODG_Config::DISPNAME
+ * @package Opendata Generator
  * @version 3.0alpha
  */
 /*
-Plugin Name: ODG_Config::DISPNAME
-Plugin URI: https://github.com/hideokamoto/ODG_Config::NAME/
-Description: This Plugin can make jsonld for Linked Open Data.Using Advanced CustomField Plugin.
+Plugin Name: Opendata Generator
+Plugin URI: https://github.com/hideokamoto/opendata-generator/
+Description: This Plugin can make jsonld for Linked Open Data. Using CustomField Plugin.
 Author: Hidetaka Okamoto
 Version: 3.0alpha
 Author URI: http://wp-kyoto.net/
@@ -63,7 +63,7 @@ class Opendata_generator {
       * エンドポイントの追加
       */
      private function add_endpoint() {
-          add_rewrite_endpoint('odg-jsonld',EP_PERMALINK|EP_ROOT|EP_PAGES|EP_CATEGORIES);
+          add_rewrite_endpoint('odg-jsonld',EP_ROOT);
           add_rewrite_endpoint('odg-jsonld-context', EP_ROOT);
      }
 

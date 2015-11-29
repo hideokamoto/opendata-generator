@@ -10,8 +10,6 @@ ZIPファイルをDLし、WordPressのプラグインとしてインストール
 
 #JSON-LDのファイルパス
 - http://[ドメイン]/odg-jsonld/：全記事分のJSON-LD
-- http://[ドメイン]/[カテゴリー名]/odg-jsonld/：該当カテゴリ全記事分のJSON-LD
-- http://[ドメイン]/[固定ページ・投稿パーマリンク]/odg-jsonld/：該当記事のJSON-LD
 
 #記事の絞り込み方法について
 
