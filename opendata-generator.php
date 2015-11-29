@@ -22,6 +22,7 @@ class Opendata_generator {
       	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.panels.php';
       	require_once plugin_dir_path( __FILE__ ) . 'classes/admin/class.admin.schema.php';
         require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.mapping.php';
+        require_once plugin_dir_path( __FILE__ ) . 'classes/ep/class.ep.schema.php';
         require_once plugin_dir_path( __FILE__ ) . 'classes/class.jsonld.content.php';
     		add_action( 'plugins_loaded', array( $this , 'plugins_loaded' ) );
         register_activation_hook( __FILE__ , array( $this , 'activation_callback' ) );
@@ -155,7 +156,7 @@ class Opendata_generator {
         if( in_array( 'odg-jsonld' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld'] ) ) {
             $this->get_content();
         } elseif ( in_array( 'odg-jsonld-context' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld-context'] ) ) {
-            $this->get_content();
+            $this->get_context();
         }
     }
 
@@ -184,6 +185,16 @@ class Opendata_generator {
 
         //Show JSON-LD
         echo $jsonld;
+        exit;
+    }
+
+    public function get_context(){
+        //Get Defined Mapping Data
+        $Schema = new ODG_Ep_Schema();
+        //Set Content Type
+        header('Content-type: application/ld+json; charset=UTF-8');
+        //Show JSON-LD
+        echo $Schema->get_context();
         exit;
     }
 
