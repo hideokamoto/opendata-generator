@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Opendata Generator
- * @version 3.0alpha
+ * @version 3.0.1alpha
  */
 /*
 Plugin Name: Opendata Generator
