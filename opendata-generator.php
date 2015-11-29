@@ -91,7 +91,7 @@ class Opendata_generator {
             'public'          => false,
             'show_ui'         => true,
             'capability_type' => 'page',
-            'supports'        => array( 'title', 'page-attributes' ),
+            'supports'        => array( 'title', 'custom-fields','page-attributes' ),
             'show_in_menu'    => false,
         );
     		register_post_type( ODG_Config::NAME, $args );
@@ -180,21 +180,11 @@ class Opendata_generator {
         }
 
         //Convert JSON-LD
-        $jsonld = $this->create_jsonld_graph( $jsonld_content );
-        $jsonld = json_encode($jsonld, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $jsonld = json_encode($jsonld_content , JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         //Show JSON-LD
         echo $jsonld;
         exit;
-    }
-
-    public function create_jsonld_graph( $content ){
-        if( 1 < count( $content ) ){
-            $jsonld['@graph'] = $content;
-        } else {
-            $jsonld = $content;
-        }
-        return $jsonld;
     }
 
 }

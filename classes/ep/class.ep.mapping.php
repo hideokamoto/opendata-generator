@@ -13,6 +13,7 @@ class ODG_Ep_Mapping {
                         $schema[$i][$key] = $value[0];
                     }
                 }
+                $schema[$i]['@type'] = get_the_title();
                 $i++;
             }
         }
