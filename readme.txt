@@ -12,7 +12,13 @@ Easy Make OpenData from WordPress CustomFields.
 
 == Description ==
 
-Making JSON-LD files for your WordPress site, using Custom Fields Content.
+This is Simple OpenData Generator Plugin.
+You can only 2 step to convert WordPress Custom Fields Data to JSON-LD Data.
+
+STEP1: Install and activate this Plugin.
+STEP2: Mapping Custome Field Name and RDF Schema(Default:http://schema.org)
+
+If you want to search posts, you can use WP_Query params.
 
 Easy Customize "@Context", and easy select output Custom Fields Content.
 
