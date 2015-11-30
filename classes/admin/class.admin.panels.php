@@ -4,33 +4,33 @@ class ODG_Admin_Panels {
     public function odg_admin_menu(){
           $home_url = get_home_url();
           echo "<div class='wrap'>";
-          printf( "<h2>%s</h2>" , __( "OpenData Generator", ODG_Config::NAME ) );
-          printf( "<p>%s</p>" , __( "Now This Plugin Supports only JSON-LD.", ODG_Config::NAME ) );
+          printf( "<h2>%s</h2>" , __( "OpenData Generator", 'opendata-generator' ) );
+          printf( "<p>%s</p>" , __( "Now This Plugin Supports only JSON-LD.", 'opendata-generator' ) );
 
           echo "<table class='widefat form-table'>";
 
           //How To Use Table
           printf( "<thead><tr><th colspan='2'>　%s</th></tr>",
-          __( "How To Use(JSON-LD)" , ODG_Config::NAME ) );
+          __( "How To Use(JSON-LD)" , 'opendata-generator' ) );
           echo "</thead>";
           echo "<tbody>";
             printf("<tr><td>　%s</td><td><a href='{$home_url}/odg-jsonld/' target='_blank'>{$home_url}/odg-jsonld/</a></td></tr>",
-            __( "See All Data" , ODG_Config::NAME ) );
+            __( "See All Data" , 'opendata-generator' ) );
             printf( "<tr><td>　%s</td><td>{$home_url}/[POST_URL]/odg-jsonld/</td></tr>" ,
-            __( "See Single Post Data" , ODG_Config::NAME ) );
+            __( "See Single Post Data" , 'opendata-generator' ) );
             printf( "<tr><td>　%s</td><td><a href='{$home_url}/odg-jsonld/' target='_blank'>{$home_url}/odg-jsonld/</a></td></tr>" ,
-            __( "Search Data for All Post" , ODG_Config::NAME ) ) ;
+            __( "Search Data for All Post" , 'opendata-generator' ) ) ;
           echo "</tbody>";
 
           //Settings Tables
           printf( "<thead><tr><th colspan='2'>　%s</th></tr></thead>",
-          __( "Settings" , ODG_Config::NAME ) );
+          __( "Settings" , 'opendata-generator' ) );
           echo "<tbody><tr><td colspan='2'>";
-            printf( "%s<hr>", __( 'Schema' , ODG_Config::NAME ) );
-            _e( "<p>RDFの語彙PREFIXを指定するよ。<br/>デフォルトでは「http://schema.org/」が指定されてるよ。</p>", ODG_Config::NAME );
+            printf( "%s<hr>", __( 'Schema' , 'opendata-generator' ) );
+            _e( "<p>RDFの語彙PREFIXを指定するよ。<br/>デフォルトでは「http://schema.org/」が指定されてるよ。</p>", 'opendata-generator' );
             echo "<br/>";
-            printf( "%s<hr>", __( 'Mapping' , ODG_Config::NAME ) );
-            _e( "<p>カスタムフィールドとのマッピングを行うよ。<br/>ここでマッピングしないと表示されないよ</p>" , ODG_Config::NAME );
+            printf( "%s<hr>", __( 'Mapping' , 'opendata-generator' ) );
+            _e( "<p>カスタムフィールドとのマッピングを行うよ。<br/>ここでマッピングしないと表示されないよ</p>" , 'opendata-generator' );
           echo "</td></tr></tbody>";
           echo "</table>";
           echo "</div>";
@@ -39,14 +39,14 @@ class ODG_Admin_Panels {
     public function odg_admin_schema() {
         $contexts = $this->get_schema_context();
         echo "<div class='wrap'>";
-        printf( "<h2>%s</h2>" , __( 'Make JSON-LD' , ODG_Config::NAME ) );
-        printf( "<h3>%s</h3>" , __( 'Setting Vocabulary' , ODG_Config::NAME ) );
+        printf( "<h2>%s</h2>" , __( 'OpenData Generator' , 'opendata-generator' ) );
+        printf( "<h3>%s</h3>" , __( 'Setting RDF Schema' , 'opendata-generator' ) );
         echo "<form method='post' action='' novalidate='novalidate'>";
         wp_nonce_field( 'odg-schema');
         echo "<table class='widefat form-table'><thead>";
         printf(
           "<tr><th>　%s</th><th>URI</th></tr>",
-          __('Vocabulary Name',ODG_Config::NAME)
+          __('Vocabulary Name','opendata-generator')
         );
         echo "</thead>";
         $this->show_schema_tables( $contexts );
@@ -98,7 +98,7 @@ class ODG_Admin_Panels {
         echo "<p class='submit'>";
         printf(
           "<input type='submit' class='button button-primary' value='%s'>",
-          __('Save Change',ODG_Config::NAME)
+          __('Save Change','opendata-generator')
         );
         echo "</p>";
     }

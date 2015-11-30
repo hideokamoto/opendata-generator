@@ -33,7 +33,7 @@ class Opendata_generator {
   	 */
   	public function plugins_loaded() {
         load_plugin_textdomain (
-      			ODG_Config::NAME,
+      			'opendata-generator',
       			false,
       			dirname( plugin_basename( __FILE__ ) ) . '/languages'
     		);
@@ -72,19 +72,19 @@ class Opendata_generator {
   	 */
   	public function register_post_type() {
     		$labels = array(
-      			'name'               => __( ODG_Config::DISPNAME, ODG_Config::NAME ),
-      			'menu_name'          => __( ODG_Config::DISPNAME, ODG_Config::NAME ),
-      			'name_admin_bar'     => __( ODG_Config::DISPNAME, ODG_Config::NAME ),
-      			'add_new'            => __( 'Add New', ODG_Config::NAME ),
-      			'add_new_item'       => __( 'Add New', ODG_Config::NAME ),
-      			'new_item'           => __( 'New Field', ODG_Config::NAME ),
-      			'edit_item'          => __( 'Edit Field', ODG_Config::NAME ),
-      			'view_item'          => __( 'View Field', ODG_Config::NAME ),
-      			'all_items'          => __( 'All Fields', ODG_Config::NAME ),
-      			'search_items'       => __( 'Search Fields', ODG_Config::NAME ),
-      			'parent_item_colon'  => __( 'Parent Fields:', ODG_Config::NAME ),
-      			'not_found'          => __( 'No Fields found.', ODG_Config::NAME ),
-      			'not_found_in_trash' => __( 'No Fields found in Trash.', ODG_Config::NAME )
+      			'name'               => __( ODG_Config::DISPNAME, 'opendata-generator' ),
+      			'menu_name'          => __( ODG_Config::DISPNAME, 'opendata-generator' ),
+      			'name_admin_bar'     => __( ODG_Config::DISPNAME, 'opendata-generator' ),
+      			'add_new'            => __( 'Add New', 'opendata-generator' ),
+      			'add_new_item'       => __( 'Add New', 'opendata-generator' ),
+      			'new_item'           => __( 'New Field', 'opendata-generator' ),
+      			'edit_item'          => __( 'Edit Field', 'opendata-generator' ),
+      			'view_item'          => __( 'View Field', 'opendata-generator' ),
+      			'all_items'          => __( 'All Fields', 'opendata-generator' ),
+      			'search_items'       => __( 'Search Fields', 'opendata-generator' ),
+      			'parent_item_colon'  => __( 'Parent Fields:', 'opendata-generator' ),
+      			'not_found'          => __( 'No Fields found.', 'opendata-generator' ),
+      			'not_found_in_trash' => __( 'No Fields found in Trash.', 'opendata-generator' )
     		);
         $args = array(
             'label'           => ODG_Config::DISPNAME,
@@ -104,8 +104,8 @@ class Opendata_generator {
   	public function admin_menu() {
         $ODG_Admin_Panels = new ODG_Admin_Panels();
         add_menu_page(
-            __(ODG_Config::DISPNAME, ODG_Config::NAME),
-            __(ODG_Config::DISPNAME, ODG_Config::NAME),
+            __(ODG_Config::DISPNAME, 'opendata-generator'),
+            __(ODG_Config::DISPNAME, 'opendata-generator'),
             'administrator',
             'odg-admin-menu',
             array( $ODG_Admin_Panels , 'odg_admin_menu' ),
@@ -114,23 +114,23 @@ class Opendata_generator {
         );
         add_submenu_page(
             'odg-admin-menu',
-            __('Schema Settings', ODG_Config::NAME),
-            __('Schema Settings', ODG_Config::NAME),
+            __('Schema Settings', 'opendata-generator'),
+            __('Schema Settings', 'opendata-generator'),
             'administrator',
             'odg-schema',
             array( $ODG_Admin_Panels, 'odg_admin_schema' )
         );
     		add_submenu_page(
           'odg-admin-menu',
-          __("Mapping List", ODG_Config::NAME),
-          __("Mapping List", ODG_Config::NAME),
+          __("Mapping List", 'opendata-generator'),
+          __("Mapping List", 'opendata-generator'),
           'administrator',
     			'edit.php?post_type=' . ODG_Config::NAME
     		);
     		add_submenu_page(
     			'odg-admin-menu',
-          __("Create Mapping", ODG_Config::NAME),
-          __("Create Mapping", ODG_Config::NAME),
+          __("Create Mapping", 'opendata-generator'),
+          __("Create Mapping", 'opendata-generator'),
           'administrator',
     			'post-new.php?post_type=' . ODG_Config::NAME
     		);
