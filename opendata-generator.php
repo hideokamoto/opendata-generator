@@ -164,7 +164,7 @@ class Opendata_generator {
 
 		//Get Defined Mapping Data
 		$Map = new ODG_Ep_Mapping();
-		$mapped_schema_array = $Map->get_Schema();
+		$mapped_schema_array = $Map->get_schema();
 
 		//Set Content Type
 		header( 'Content-type: application/ld+json; charset=UTF-8' );
