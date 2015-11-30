@@ -62,7 +62,7 @@ class Opendata_generator {
 	 /**
 	  * エンドポイントの追加
 	  */
-	private function add_endpoint() {
+	public function add_endpoint() {
 		add_rewrite_endpoint( 'odg-jsonld' , EP_ROOT );
 		add_rewrite_endpoint( 'odg-jsonld-context' , EP_ROOT );
 	}

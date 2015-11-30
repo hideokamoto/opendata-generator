@@ -3,7 +3,7 @@ language: php
 notifications:
   on_success: never
   on_failure: change
-  
+
 php:
     - 5.5
     - 5.6
