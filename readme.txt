@@ -4,7 +4,7 @@ Donate link: https://note.mu/hideokamoto/n/nd0cecce0e758
 Tags: json-ld,opendata
 Requires at least: 4.1.2
 Tested up to: 4.3.2
-Stable tag: 3.0.1alpha
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,9 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 
 == Changelog ==
 
+= 3.0.2 =
+- Fix Activation error
+
 = 3.0alpha =
 2015/11/29 Fully remake.
 - Support "@Graph" Parameter
@@ -72,5 +75,5 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 
 == Upgrade Notice ==
 
-= 1.4 =
-Refactor for WordPress Plugin DIR.
+= 3.0.2 =
+- Fix Activation error
