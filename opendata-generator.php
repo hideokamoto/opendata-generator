@@ -54,7 +54,7 @@ class Opendata_generator {
 	/**
 	 * 有効化時の処理
 	 */
-	private function activation_callback() {
+	public function activation_callback() {
 		$this->add_endpoint();
 		flush_rewrite_rules();
 	}
