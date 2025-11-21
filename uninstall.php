@@ -50,16 +50,10 @@ function odg_delete_mapping_posts() {
 	);
 
 	// Delete each post and its metadata
+	// wp_delete_post() with force=true automatically deletes associated post meta
 	foreach ( $mapping_posts as $post_id ) {
 		wp_delete_post( $post_id, true );
 	}
-
-	// Clean up post meta table
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->postmeta} WHERE post_id NOT IN (SELECT ID FROM {$wpdb->posts})"
-		)
-	);
 }
 
 /**

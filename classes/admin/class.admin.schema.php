@@ -28,7 +28,6 @@ class ODG_Admin_Schema {
 		// Redirect back to settings page
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect( add_query_arg( 'settings-updated', 'true', menu_page_url( 'odg-schema', false ) ) );
-		exit;
 	}
 
 	private function check_schema()
