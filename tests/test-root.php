@@ -6,9 +6,12 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 
 	/**
 	 * Setup test environment
+	 *
+	 * set_up()/tear_down() are the WordPress test suite's PHPUnit-version-neutral
+	 * hooks (WP 5.9+). Overriding setUp() without `: void` is a fatal error there.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Create a test post
 		$this->post_id = $this->factory->post->create(
@@ -33,6 +36,42 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 		);
 		add_post_meta( $mapping_id, 'schema:name', 'name' );
 		add_post_meta( $mapping_id, 'schema:description', 'description' );
+	}
+
+	/**
+	 * Clean up after tests
+	 */
+	public function tear_down() {
+		unset( $_GET['filter'], $_POST['odg-schema'], $_POST['_wpnonce'], $_REQUEST['_wpnonce'] );
+		wp_delete_post( $this->post_id, true );
+		delete_option( 'odg-context' );
+		parent::tear_down();
+	}
+
+	/**
+	 * Run the JSON-LD query as the public endpoint does.
+	 */
+	private function get_public_content( $filter = null ) {
+		if ( null !== $filter ) {
+			$_GET['filter'] = $filter;
+		}
+		$mapping = new ODG_Ep_Mapping();
+		$jsonld  = new ODG_JSONLD_Content();
+		return $jsonld->get_content( $mapping->get_schema() );
+	}
+
+	private function create_post_with_name( $name, $args = array() ) {
+		$post_id = $this->factory->post->create(
+			array_merge(
+				array(
+					'post_title'  => $name,
+					'post_status' => 'publish',
+				),
+				$args
+			)
+		);
+		add_post_meta( $post_id, 'schema:name', $name );
+		return $post_id;
 	}
 
 	/**
@@ -89,46 +128,142 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 	 * Test ODG_JSONLD_Content with query parameters
 	 */
 	public function test_jsonld_content_with_valid_filter() {
-		$mapping      = new ODG_Ep_Mapping();
-		$schema_array = $mapping->get_schema();
-
-		// Simulate valid filter parameter
-		$_GET['filter'] = array(
-			'posts_per_page' => '5',
-			'order'          => 'DESC',
+		$content = $this->get_public_content(
+			array(
+				'posts_per_page' => '5',
+				'order'          => 'DESC',
+			)
 		);
 
-		$jsonld = new ODG_JSONLD_Content();
-		$content = $jsonld->get_content( $schema_array );
-
 		$this->assertIsArray( $content );
-
-		// Clean up
-		unset( $_GET['filter'] );
+		$this->assertSame( 'Test Event', $content[0]['name'] );
 	}
 
 	/**
 	 * Test security: Invalid filter parameters should be sanitized
 	 */
 	public function test_jsonld_content_security_sanitization() {
-		$mapping      = new ODG_Ep_Mapping();
-		$schema_array = $mapping->get_schema();
-
-		// Simulate malicious filter parameter
-		$_GET['filter'] = array(
-			'posts_per_page' => '-1; DROP TABLE wp_posts;', // SQL injection attempt
-			'order'          => 'INVALID',
-			'unknown_param'  => 'should_be_ignored',
+		$content = $this->get_public_content(
+			array(
+				'posts_per_page' => '-1; DROP TABLE wp_posts;', // SQL injection attempt
+				'order'          => 'INVALID',
+				'unknown_param'  => 'should_be_ignored',
+			)
 		);
-
-		$jsonld = new ODG_JSONLD_Content();
-		$content = $jsonld->get_content( $schema_array );
 
 		// Should still work without errors
 		$this->assertIsArray( $content );
+		$this->assertNotNull( get_post( $this->post_id ) );
+	}
 
-		// Clean up
-		unset( $_GET['filter'] );
+	/**
+	 * Drafts, private, pending, future and password-protected posts must never be
+	 * served by the public endpoint, whatever post_status the request asks for.
+	 */
+	public function test_non_public_posts_are_never_exposed() {
+		$this->create_post_with_name( 'SECRET-DRAFT', array( 'post_status' => 'draft' ) );
+		$this->create_post_with_name( 'SECRET-PRIVATE', array( 'post_status' => 'private' ) );
+		$this->create_post_with_name( 'SECRET-PENDING', array( 'post_status' => 'pending' ) );
+		$this->create_post_with_name(
+			'SECRET-FUTURE',
+			array(
+				'post_status' => 'future',
+				'post_date'   => gmdate( 'Y-m-d H:i:s', time() + YEAR_IN_SECONDS ),
+			)
+		);
+		$this->create_post_with_name( 'SECRET-PASSWORD', array( 'post_password' => 'pass' ) );
+
+		foreach ( array( null, 'draft', 'private', 'pending', 'future', 'any', 'draft,private' ) as $status ) {
+			$filter  = null === $status ? null : array( 'post_status' => $status );
+			$content = $this->get_public_content( $filter );
+			$json    = wp_json_encode( $content );
+
+			$this->assertStringNotContainsString( 'SECRET-', $json, 'post_status=' . var_export( $status, true ) );
+			$this->assertStringContainsString( 'Test Event', $json, 'post_status=' . var_export( $status, true ) );
+			unset( $_GET['filter'] );
+		}
+	}
+
+	/**
+	 * post_type may only name post types that are public on the front end.
+	 */
+	public function test_post_type_filter_rejects_non_public_types() {
+		register_post_type( 'odg_internal', array( 'public' => false ) );
+		$this->create_post_with_name( 'SECRET-INTERNAL', array( 'post_type' => 'odg_internal' ) );
+
+		foreach ( array( 'odg_internal', ODG_Config::NAME, 'revision', 'nav_menu_item' ) as $post_type ) {
+			$json = wp_json_encode( $this->get_public_content( array( 'post_type' => $post_type ) ) );
+			$this->assertStringNotContainsString( 'SECRET-INTERNAL', $json, 'post_type=' . $post_type );
+			// The mapping definition ("schema:name" => "name") must not be served as content.
+			$this->assertStringContainsString( 'Test Event', $json, 'post_type=' . $post_type );
+			unset( $_GET['filter'] );
+		}
+
+		$this->factory->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'A page',
+				'post_status' => 'publish',
+				'meta_input'  => array( 'schema:name' => 'PUBLIC-PAGE' ),
+			)
+		);
+		$json = wp_json_encode( $this->get_public_content( array( 'post_type' => 'page' ) ) );
+		$this->assertStringContainsString( 'PUBLIC-PAGE', $json );
+	}
+
+	/**
+	 * A post that matches only a later mapping keeps its fields.
+	 */
+	public function test_single_mapping_post_keeps_fields_when_it_matches_a_later_mapping() {
+		$place_id = $this->factory->post->create(
+			array(
+				'post_title'  => 'Place',
+				'post_type'   => ODG_Config::NAME,
+				'post_status' => 'publish',
+				// Older than the "Event" mapping, so get_schema() (newest first) lists it second.
+				'post_date'   => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ),
+			)
+		);
+		add_post_meta( $place_id, 'schema:address', 'address' );
+
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'  => 'Address only',
+				'post_status' => 'publish',
+			)
+		);
+		add_post_meta( $post_id, 'schema:address', 'ADDRESS-ONLY' );
+
+		$mapping = new ODG_Ep_Mapping();
+		$schema  = $mapping->get_schema();
+		$this->assertCount( 2, $schema );
+		$this->assertSame( 'Place', $schema[1]['@type'] );
+
+		$content = $this->get_public_content();
+		$by_id   = array();
+		foreach ( $content as $item ) {
+			$by_id[ $item['@id'] ] = $item;
+		}
+		$item = $by_id[ get_permalink( $post_id ) ];
+
+		// Its only entry sits at mapping index 1, not 0; the fields must survive.
+		$this->assertSame( 'ADDRESS-ONLY', $item['address'] );
+		$this->assertSame( 'Place', $item['@type'] );
+	}
+
+	/**
+	 * Array values in filter[] must not reach string functions (TypeError on PHP 8).
+	 */
+	public function test_non_scalar_filter_values_are_ignored() {
+		$content = $this->get_public_content(
+			array(
+				'order'   => array( 'DESC' ),
+				'orderby' => array( 'title' ),
+				's'       => array( 'x' ),
+			)
+		);
+
+		$this->assertIsArray( $content );
 	}
 
 	/**
@@ -141,15 +276,23 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 				'iri'  => 'http://example.com/',
 			),
 			array(
+				// esc_url_raw() drops the javascript: scheme, so this row is rejected.
 				'type' => 'invalid',
-				'iri'  => 'not-a-url',
+				'iri'  => 'javascript:alert(1)',
 			),
 		);
 
-		$_POST['_wpnonce'] = wp_create_nonce( 'odg-schema' );
+		// check_admin_referer() reads the nonce from $_REQUEST.
+		$_POST['_wpnonce']    = wp_create_nonce( 'odg-schema' );
+		$_REQUEST['_wpnonce'] = $_POST['_wpnonce'];
+
+		// save_schema() redirects; stop wp_redirect() from sending headers in CLI.
+		add_filter( 'wp_redirect', '__return_false' );
 
 		$schema = new ODG_Admin_Schema();
-		$result = $schema->save_schema();
+		$schema->save_schema();
+
+		remove_filter( 'wp_redirect', '__return_false' );
 
 		$context = get_option( 'odg-context' );
 
@@ -158,18 +301,5 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 
 		// Invalid URL should be rejected
 		$this->assertCount( 1, $context );
-
-		// Clean up
-		unset( $_POST['odg-schema'] );
-		unset( $_POST['_wpnonce'] );
-	}
-
-	/**
-	 * Clean up after tests
-	 */
-	public function tearDown() {
-		wp_delete_post( $this->post_id, true );
-		delete_option( 'odg-context' );
-		parent::tearDown();
 	}
 }
