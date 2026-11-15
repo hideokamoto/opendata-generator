@@ -9,8 +9,10 @@ class ODG_JSONLD_Content {
 
 		// Security: Whitelist and sanitize allowed query parameters
 		if ( isset( $_GET['filter'] ) && is_array( $_GET['filter'] ) ) {
+			// post_status is deliberately not accepted: the endpoint is public, and
+			// WP_Query returns drafts and private posts when a status is named.
 			$allowed_params = array(
-				'posts_per_page', 'post_type', 'post_status',
+				'posts_per_page', 'post_type',
 				'cat', 'category_name', 'tag', 'tag_id',
 				'author', 'author_name',
 				'year', 'monthnum', 'day', 'hour', 'minute', 'second',
@@ -20,9 +22,22 @@ class ODG_JSONLD_Content {
 			);
 
 			foreach ( $_GET['filter'] as $key => $value ) {
+				// Arrays (filter[order][]=x) would reach string functions and fatal on PHP 8.
+				if ( ! is_scalar( $value ) ) {
+					continue;
+				}
 				if ( in_array( $key, $allowed_params, true ) ) {
 					// Sanitize based on parameter type
 					switch ( $key ) {
+						case 'post_type':
+							// Only post types that are public on the front end. The plugin's own
+							// mapping type (public => false) and other internal types are refused.
+							$post_type        = sanitize_key( $value );
+							$post_type_object = get_post_type_object( $post_type );
+							if ( $post_type_object && $post_type_object->public && ODG_Config::NAME !== $post_type ) {
+								$query[ $key ] = $post_type;
+							}
+							break;
 						case 'posts_per_page':
 						case 'cat':
 						case 'tag_id':
@@ -43,7 +58,8 @@ class ODG_JSONLD_Content {
 						case 'orderby':
 							$allowed_orderby = array( 'date', 'title', 'name', 'modified', 'author', 'rand', 'ID' );
 							if ( in_array( $value, $allowed_orderby, true ) ) {
-								$query[ $key ] = sanitize_key( $value );
+								// Already matched against the list; sanitize_key() would lowercase 'ID'.
+								$query[ $key ] = $value;
 							}
 							break;
 						default:
@@ -57,6 +73,10 @@ class ODG_JSONLD_Content {
 		if ( ! isset( $query['posts_per_page'] ) ) {
 			$query['posts_per_page'] = -1;
 		}
+
+		// The JSON-LD endpoint is public: only published posts without a password.
+		$query['post_status']  = 'publish';
+		$query['has_password'] = false;
 
 		return $query;
 	}
@@ -95,7 +115,8 @@ class ODG_JSONLD_Content {
 						// Bug fix: Merge $cont[$i] instead of entire $cont array
 						$content[ $i ]['@graph'] = array_values( $cont[ $i ] );
 					} else {
-						$content[ $i ] = $cont[ $i ][0];
+						// The single entry keeps its mapping index, which is not always 0.
+						$content[ $i ] = reset( $cont[ $i ] );
 					}
 					$content[ $i ]['@id'] = get_the_permalink();
 					$content[ $i ]['@context'] = get_home_url() . '/odg-jsonld-context/';
