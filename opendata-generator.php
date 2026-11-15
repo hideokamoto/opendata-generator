@@ -161,41 +161,80 @@ class Opendata_generator {
 	}
 
 	public function get_content() {
+		try {
+			//Get Defined Mapping Data
+			$Map = new ODG_Ep_Mapping();
+			$mapped_schema_array = $Map->get_schema();
 
-		//Get Defined Mapping Data
-		$Map = new ODG_Ep_Mapping();
-		$mapped_schema_array = $Map->get_schema();
+			if ( empty( $mapped_schema_array ) ) {
+				throw new Exception( 'No mapping schema defined' );
+			}
 
-		//Set Content Type
-		header( 'Content-type: application/ld+json; charset=UTF-8' );
+			//Set Content Type
+			header( 'Content-type: application/ld+json; charset=UTF-8' );
 
-		//Get Content(JSON-LD)
-		$JSONLD_Cont = new ODG_JSONLD_Content();
-		$jsonld_content = $JSONLD_Cont->get_content( $mapped_schema_array );
+			//Get Content(JSON-LD)
+			$JSONLD_Cont = new ODG_JSONLD_Content();
+			$jsonld_content = $JSONLD_Cont->get_content( $mapped_schema_array );
 
-		if ( ! $jsonld_content ) {
+			if ( ! $jsonld_content ) {
+				throw new Exception( 'No content found' );
+			}
+
+			//Convert JSON-LD
+			$jsonld = json_encode( $jsonld_content , JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT );
+
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				throw new Exception( 'JSON encoding error: ' . json_last_error_msg() );
+			}
+
+			//Show JSON-LD
+			echo $jsonld;
+			exit;
+
+		} catch ( Exception $e ) {
+			// Log error
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'OpenData Generator Error: ' . $e->getMessage() );
+			}
+
+			// Return 404
 			global $wp_query;
 			$wp_query->set_404();
 			status_header( 404 );
 			exit;
 		}
-
-		//Convert JSON-LD
-		$jsonld = json_encode( $jsonld_content , JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT );
-
-		//Show JSON-LD
-		echo $jsonld;
-		exit;
 	}
 
-	public function get_context(){
-		//Get Defined Mapping Data
-		$Schema = new ODG_Ep_Schema();
-		//Set Content Type
-		header( 'Content-type: application/ld+json; charset=UTF-8' );
-		//Show JSON-LD
-		echo $Schema->get_context();
-		exit;
+	public function get_context() {
+		try {
+			//Get Defined Mapping Data
+			$Schema = new ODG_Ep_Schema();
+			$context = $Schema->get_context();
+
+			if ( empty( $context ) ) {
+				throw new Exception( 'Context generation failed' );
+			}
+
+			//Set Content Type
+			header( 'Content-type: application/ld+json; charset=UTF-8' );
+
+			//Show JSON-LD
+			echo $context;
+			exit;
+
+		} catch ( Exception $e ) {
+			// Log error
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'OpenData Generator Context Error: ' . $e->getMessage() );
+			}
+
+			// Return 404
+			global $wp_query;
+			$wp_query->set_404();
+			status_header( 404 );
+			exit;
+		}
 	}
 
 }
