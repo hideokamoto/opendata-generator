@@ -1,14 +1,16 @@
 <?php
 /**
  * @package Opendata Generator
- * @version 3.0.2
+ * @version 3.0.3
  */
 /*
 Plugin Name: Opendata Generator
 Plugin URI: https://github.com/hideokamoto/opendata-generator/
 Description: This Plugin can make jsonld for Linked Open Data. Using CustomField Plugin.
 Author: Hidetaka Okamoto
-Version: 3.0.2
+Version: 3.0.3
+Requires at least: 5.9
+Requires PHP: 7.4
 Author URI: http://wp-kyoto.net/
 */
 

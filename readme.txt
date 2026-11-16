@@ -2,8 +2,9 @@
 Contributors: hideokamoto
 Donate link: https://note.mu/hideokamoto/n/nd0cecce0e758
 Tags: json-ld,opendata
-Requires at least: 4.1.2
-Tested up to: 4.3.2
+Requires at least: 5.9
+Tested up to: 7.1
+Requires PHP: 7.4
 Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +39,16 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 
 
 == Changelog ==
+
+= 3.0.3 =
+Security and maintenance release.
+- The JSON-LD endpoint returns only published, non-password-protected posts of public post types. The `post_status` filter is no longer accepted.
+- Query filters are limited to an allow list and sanitized; array values are ignored.
+- Schema settings: nonce and `manage_options` capability checks, sanitized input, redirect after saving.
+- `Access-Control-Allow-Origin: *` is sent only by the JSON-LD endpoints, not by every page.
+- Fixed: mappings beyond the 10th were ignored; a warning when no mapping exists; `&` in a context IRI was HTML-escaped in JSON; the global post was not restored after building JSON-LD.
+- Uninstall removes the plugin's option and mapping posts (on every site of a multisite network).
+- Requires WordPress 5.9 and PHP 7.4. Tested with WordPress 7.1.
 
 = 3.0.2 =
 - Fix Activation error
@@ -74,6 +85,9 @@ Easy Customize "@Context", and easy select output Custom Fields Content.
 
 
 == Upgrade Notice ==
+
+= 3.0.3 =
+Security release: the JSON-LD endpoint no longer exposes drafts, private or password-protected posts. Requires WordPress 5.9 and PHP 7.4.
 
 = 3.0.2 =
 - Fix Activation error
