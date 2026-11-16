@@ -2,7 +2,7 @@
 class ODG_Admin_Panels {
 
 	public function odg_admin_menu(){
-		$home_url = get_home_url();
+		$home_url = esc_url( get_home_url() );
 		echo "<div class='wrap'>";
 		printf( '<h2>%s</h2>' , __( 'OpenData Generator', 'opendata-generator' ) );
 		printf( '<p>%s</p>' , __( 'Now This Plugin Supports only JSON-LD.', 'opendata-generator' ) );
@@ -139,7 +139,7 @@ class ODG_Admin_Panels {
 		$tr .= "<td><input name='odg-schema[{$i}][iri]' type='url' id='siteurl-{$i}' value='' class='regular-text code'></td>";
 		$tr .= '</tr>';
 		$tbody .= $tr;
-		$tbody .= '<tbody>';
+		$tbody .= '</tbody>';
 		echo $tbody;
 	}
 

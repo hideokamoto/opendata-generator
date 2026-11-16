@@ -282,6 +282,9 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 			),
 		);
 
+		// Only administrators may save; the nonce is tied to the current user.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
 		// check_admin_referer() reads the nonce from $_REQUEST.
 		$_POST['_wpnonce']    = wp_create_nonce( 'odg-schema' );
 		$_REQUEST['_wpnonce'] = $_POST['_wpnonce'];
@@ -301,6 +304,28 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 
 		// Invalid URL should be rejected
 		$this->assertCount( 1, $context );
+	}
+
+	/**
+	 * A user without manage_options cannot save the schema, even with a valid nonce.
+	 */
+	public function test_admin_schema_requires_manage_options() {
+		update_option( 'odg-context', array( array( 'type' => 'schema', 'iri' => 'http://schema.org/' ) ) );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		$_POST['odg-schema']  = array( array( 'type' => 'evil', 'iri' => 'http://evil.example/' ) );
+		$_POST['_wpnonce']    = wp_create_nonce( 'odg-schema' );
+		$_REQUEST['_wpnonce'] = $_POST['_wpnonce'];
+
+		$died = false;
+		try {
+			( new ODG_Admin_Schema() )->save_schema();
+		} catch ( WPDieException $e ) {
+			$died = true;
+		}
+
+		$this->assertTrue( $died );
+		$this->assertSame( 'http://schema.org/', get_option( 'odg-context' )[0]['iri'] );
 	}
 
 	/**

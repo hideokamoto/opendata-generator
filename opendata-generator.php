@@ -106,7 +106,7 @@ class Opendata_generator {
 		add_menu_page(
 			__( ODG_Config::DISPNAME , 'opendata-generator' ),
 			__( ODG_Config::DISPNAME , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'odg-admin-menu',
 			array( $ODG_Admin_Panels, 'odg_admin_menu' ),
 			false,
@@ -116,7 +116,7 @@ class Opendata_generator {
 			'odg-admin-menu',
 			__( 'Schema Settings' , 'opendata-generator' ),
 			__( 'Schema Settings' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'odg-schema',
 			array( $ODG_Admin_Panels, 'odg_admin_schema' )
 		);
@@ -124,14 +124,14 @@ class Opendata_generator {
 			'odg-admin-menu',
 			__( 'Mapping List' , 'opendata-generator' ),
 			__( 'Mapping List' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'edit.php?post_type=' . ODG_Config::NAME
 		);
 		add_submenu_page(
 			'odg-admin-menu',
 			__( 'Create Mapping' , 'opendata-generator' ),
 			__( 'Create Mapping' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'post-new.php?post_type=' . ODG_Config::NAME
 		);
 	}
