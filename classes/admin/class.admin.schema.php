@@ -1,6 +1,12 @@
 <?php
 class ODG_Admin_Schema {
 	public function save_schema() {
+		// The settings page is only shown to users who can manage options; the save must
+		// check the same capability, not just the nonce.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to manage these settings.', 'opendata-generator' ), 403 );
+		}
+
 		// Verify nonce for security
 		if ( check_admin_referer( 'odg-schema' ) ) {
 			$context = $this->check_schema();
@@ -27,7 +33,10 @@ class ODG_Admin_Schema {
 
 		// Redirect back to settings page
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect( add_query_arg( 'settings-updated', 'true', menu_page_url( 'odg-schema', false ) ) );
+		if ( wp_safe_redirect( add_query_arg( 'settings-updated', 'true', menu_page_url( 'odg-schema', false ) ) ) ) {
+			// Without exit the request kept running and rendered admin-init output after the redirect header.
+			exit;
+		}
 	}
 
 	private function check_schema()

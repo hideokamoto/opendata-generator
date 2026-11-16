@@ -1,14 +1,16 @@
 <?php
 /**
  * @package Opendata Generator
- * @version 3.0.2
+ * @version 3.0.3
  */
 /*
 Plugin Name: Opendata Generator
 Plugin URI: https://github.com/hideokamoto/opendata-generator/
 Description: This Plugin can make jsonld for Linked Open Data. Using CustomField Plugin.
 Author: Hidetaka Okamoto
-Version: 3.0.2
+Version: 3.0.3
+Requires at least: 5.9
+Requires PHP: 7.4
 Author URI: http://wp-kyoto.net/
 */
 
@@ -106,7 +108,7 @@ class Opendata_generator {
 		add_menu_page(
 			__( ODG_Config::DISPNAME , 'opendata-generator' ),
 			__( ODG_Config::DISPNAME , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'odg-admin-menu',
 			array( $ODG_Admin_Panels, 'odg_admin_menu' ),
 			false,
@@ -116,7 +118,7 @@ class Opendata_generator {
 			'odg-admin-menu',
 			__( 'Schema Settings' , 'opendata-generator' ),
 			__( 'Schema Settings' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'odg-schema',
 			array( $ODG_Admin_Panels, 'odg_admin_schema' )
 		);
@@ -124,14 +126,14 @@ class Opendata_generator {
 			'odg-admin-menu',
 			__( 'Mapping List' , 'opendata-generator' ),
 			__( 'Mapping List' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'edit.php?post_type=' . ODG_Config::NAME
 		);
 		add_submenu_page(
 			'odg-admin-menu',
 			__( 'Create Mapping' , 'opendata-generator' ),
 			__( 'Create Mapping' , 'opendata-generator' ),
-			'administrator',
+			'manage_options',
 			'post-new.php?post_type=' . ODG_Config::NAME
 		);
 	}
@@ -150,8 +152,6 @@ class Opendata_generator {
 	 * データの表示処理
 	 */
 	public function odg_redirect() {
-		header( 'Access-Control-Allow-Origin: *' );
-
 		global $wp_query;
 		if ( in_array( 'odg-jsonld' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld'] ) ) {
 			$this->get_content();
@@ -170,7 +170,8 @@ class Opendata_generator {
 				throw new Exception( 'No mapping schema defined' );
 			}
 
-			//Set Content Type
+			//Set Content Type. CORS is opened for the JSON-LD endpoints only, not for every front-end page.
+			header( 'Access-Control-Allow-Origin: *' );
 			header( 'Content-type: application/ld+json; charset=UTF-8' );
 
 			//Get Content(JSON-LD)
@@ -216,7 +217,8 @@ class Opendata_generator {
 				throw new Exception( 'Context generation failed' );
 			}
 
-			//Set Content Type
+			//Set Content Type. CORS is opened for the JSON-LD endpoints only, not for every front-end page.
+			header( 'Access-Control-Allow-Origin: *' );
 			header( 'Content-type: application/ld+json; charset=UTF-8' );
 
 			//Show JSON-LD

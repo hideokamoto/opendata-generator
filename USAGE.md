@@ -262,7 +262,7 @@ To use with custom post types:
 ### Issue: Security warnings
 
 **Solutions**:
-1. Update to latest version (3.0.2+)
+1. Update to latest version (3.0.3+)
 2. Review filter parameters - only whitelisted params allowed
 3. Enable WP_DEBUG to see detailed error logs
 

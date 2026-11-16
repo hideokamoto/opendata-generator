@@ -21,18 +21,6 @@ require_once plugin_dir_path( __FILE__ ) . 'classes/class.config.php';
  */
 function odg_delete_options() {
 	delete_option( 'odg-context' );
-
-	// Delete options for multisite
-	if ( is_multisite() ) {
-		global $wpdb;
-		$blog_ids = $wpdb->get_col( "SELECT blog_id FROM {$wpdb->blogs}" );
-
-		foreach ( $blog_ids as $blog_id ) {
-			switch_to_blog( $blog_id );
-			delete_option( 'odg-context' );
-			restore_current_blog();
-		}
-	}
 }
 
 /**
@@ -57,17 +45,44 @@ function odg_delete_mapping_posts() {
 }
 
 /**
- * Main uninstall function
+ * Remove the plugin's data from one site.
  */
-function odg_uninstall() {
+function odg_uninstall_site() {
 	// Delete options
 	odg_delete_options();
 
 	// Delete mapping posts
 	odg_delete_mapping_posts();
 
-	// Flush rewrite rules
-	flush_rewrite_rules();
+	// Drop the cached rewrite rules so they are rebuilt without the odg-jsonld endpoints.
+	// flush_rewrite_rules() is not used: after switch_to_blog() it would write the rules
+	// built for the original site into the switched site.
+	delete_option( 'rewrite_rules' );
+}
+
+/**
+ * Main uninstall function
+ *
+ * On multisite the options and the mapping posts live in each site's own tables,
+ * so both are removed site by site (previously only the options were).
+ */
+function odg_uninstall() {
+	if ( ! is_multisite() ) {
+		odg_uninstall_site();
+		return;
+	}
+
+	$site_ids = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
+	foreach ( $site_ids as $site_id ) {
+		switch_to_blog( $site_id );
+		odg_uninstall_site();
+		restore_current_blog();
+	}
 }
 
 // Run uninstall

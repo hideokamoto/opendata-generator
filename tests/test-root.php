@@ -282,6 +282,9 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 			),
 		);
 
+		// Only administrators may save; the nonce is tied to the current user.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
 		// check_admin_referer() reads the nonce from $_REQUEST.
 		$_POST['_wpnonce']    = wp_create_nonce( 'odg-schema' );
 		$_REQUEST['_wpnonce'] = $_POST['_wpnonce'];
@@ -301,5 +304,101 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 
 		// Invalid URL should be rejected
 		$this->assertCount( 1, $context );
+	}
+
+	/**
+	 * A user without manage_options cannot save the schema, even with a valid nonce.
+	 */
+	public function test_admin_schema_requires_manage_options() {
+		update_option( 'odg-context', array( array( 'type' => 'schema', 'iri' => 'http://schema.org/' ) ) );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		$_POST['odg-schema']  = array( array( 'type' => 'evil', 'iri' => 'http://evil.example/' ) );
+		$_POST['_wpnonce']    = wp_create_nonce( 'odg-schema' );
+		$_REQUEST['_wpnonce'] = $_POST['_wpnonce'];
+
+		$died = false;
+		try {
+			( new ODG_Admin_Schema() )->save_schema();
+		} catch ( WPDieException $e ) {
+			$died = true;
+		}
+
+		$this->assertTrue( $died );
+		$this->assertSame( 'http://schema.org/', get_option( 'odg-context' )[0]['iri'] );
+	}
+
+	/**
+	 * With no mapping defined, get_schema() returns an empty array (it used to read an
+	 * undefined variable, a warning on PHP 8).
+	 */
+	public function test_mapping_get_schema_without_mappings() {
+		foreach ( get_posts( array( 'post_type' => ODG_Config::NAME, 'posts_per_page' => -1, 'fields' => 'ids' ) ) as $id ) {
+			wp_delete_post( $id, true );
+		}
+
+		$mapping = new ODG_Ep_Mapping();
+		$this->assertSame( array(), $mapping->get_schema() );
+	}
+
+	/**
+	 * Every mapping applies, not only the 10 newest.
+	 */
+	public function test_mapping_get_schema_returns_more_than_ten_mappings() {
+		for ( $i = 0; $i < 11; $i++ ) {
+			$id = $this->factory->post->create(
+				array(
+					'post_title'  => 'Type' . $i,
+					'post_type'   => ODG_Config::NAME,
+					'post_status' => 'publish',
+				)
+			);
+			add_post_meta( $id, 'schema:prop' . $i, 'prop' . $i );
+		}
+
+		$mapping = new ODG_Ep_Mapping();
+		$this->assertCount( 12, $mapping->get_schema() );
+	}
+
+	/**
+	 * The context endpoint is JSON: IRIs must not be HTML-escaped.
+	 */
+	public function test_context_iri_is_not_html_escaped() {
+		update_option( 'odg-context', array( array( 'type' => 'ex', 'iri' => 'http://example.com/vocab?a=1&b=2' ) ) );
+
+		$decoded = json_decode( ( new ODG_Ep_Schema() )->get_context(), true );
+		$this->assertSame( 'http://example.com/vocab?a=1&b=2', $decoded['@context'] );
+	}
+
+	/**
+	 * Building JSON-LD must not leave the global $post pointing at the last queried post.
+	 */
+	public function test_get_content_restores_global_post() {
+		global $post;
+		$other = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$this->go_to( get_permalink( $other ) );
+		// wp_reset_postdata() restores the main query's post, as on a real request.
+		$post = $GLOBALS['wp_query']->post;
+		$this->assertSame( $other, $post->ID );
+
+		$this->get_public_content();
+
+		$this->assertSame( $other, $GLOBALS['post']->ID );
+	}
+
+	/**
+	 * uninstall.php removes the option and every mapping post.
+	 */
+	public function test_uninstall_removes_options_and_mappings() {
+		update_option( 'odg-context', array( array( 'type' => 'schema', 'iri' => 'http://schema.org/' ) ) );
+
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', 'opendata-generator/opendata-generator.php' );
+		}
+		require dirname( __DIR__ ) . '/uninstall.php';
+
+		$this->assertFalse( get_option( 'odg-context' ) );
+		$this->assertSame( array(), get_posts( array( 'post_type' => ODG_Config::NAME, 'post_status' => 'any', 'fields' => 'ids' ) ) );
+		$this->assertSame( $this->post_id, get_post( $this->post_id )->ID );
 	}
 }

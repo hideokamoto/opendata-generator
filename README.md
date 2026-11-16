@@ -1,4 +1,4 @@
-# OpenData Generator v3.0.2
+# OpenData Generator v3.0.3
 
 WordPress plugin for generating JSON-LD (Linked Open Data) from custom fields.
 
@@ -44,7 +44,7 @@ http://[your-domain]/odg-jsonld/?filter[cat]=1&filter[posts_per_page]=10
 
 Secure whitelist of allowed parameters:
 
-- `posts_per_page`, `post_type`, `post_status`
+- `posts_per_page`, `post_type` (public post types only)
 - `cat`, `category_name`, `tag`, `tag_id`
 - `author`, `author_name`
 - `year`, `monthnum`, `day`, `hour`, `minute`, `second`
@@ -110,13 +110,15 @@ The plugin adds a menu item **OpenData Generator** with the following subpages:
 ### Running Tests
 
 ```bash
-phpunit
+composer install
+bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
+vendor/bin/phpunit
 ```
 
 ### Requirements
 
-- WordPress 4.1.2 or higher
-- PHP 5.6 or higher
+- WordPress 5.9 or higher (tested up to 7.1)
+- PHP 7.4 or higher
 
 ## Examples
 
@@ -144,14 +146,16 @@ GPL v2 or later. See LICENSE.md for details.
 
 ## Changelog
 
+### 3.0.3
+- Security: the JSON-LD endpoint returns only published, non-password-protected posts of public post types
+- Security: whitelisted and sanitized query filters, capability and nonce checks for settings
+- Bug fixes for @graph and @type handling, mappings beyond the 10th, context IRI escaping
+- Added error handling and tests
+- Added uninstall cleanup (multisite aware)
+- Requires WordPress 5.9 / PHP 7.4, tested up to WordPress 7.1
+
 ### 3.0.2
 - Fix activation error
-- Security improvements
-- Bug fixes for @graph and @type handling
-- Enhanced input sanitization
-- Added comprehensive tests
-- Added error handling
-- Added uninstall hook
 
 ### 3.0.0
 - Full remake

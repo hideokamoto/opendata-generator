@@ -19,12 +19,13 @@ class ODG_Ep_Schema {
 					);
 				break;
 			case 1:
-				$context['@context'] = esc_url( $contextData[0]['iri'] );
+				// esc_url() is for HTML output and turns "&" into "&#038;"; this is JSON.
+				$context['@context'] = esc_url_raw( $contextData[0]['iri'] );
 				break;
 			default:
 				foreach ( $contextData as $key => $value ) {
 					$contextArray[] = array(
-						esc_attr( $value['type'] ) => esc_url( $value['iri'] ),
+						esc_attr( $value['type'] ) => esc_url_raw( $value['iri'] ),
 					);
 				}
 				$context['@context'] = $contextArray;
