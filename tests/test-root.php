@@ -385,4 +385,20 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 
 		$this->assertSame( $other, $GLOBALS['post']->ID );
 	}
+
+	/**
+	 * uninstall.php removes the option and every mapping post.
+	 */
+	public function test_uninstall_removes_options_and_mappings() {
+		update_option( 'odg-context', array( array( 'type' => 'schema', 'iri' => 'http://schema.org/' ) ) );
+
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', 'opendata-generator/opendata-generator.php' );
+		}
+		require dirname( __DIR__ ) . '/uninstall.php';
+
+		$this->assertFalse( get_option( 'odg-context' ) );
+		$this->assertSame( array(), get_posts( array( 'post_type' => ODG_Config::NAME, 'post_status' => 'any', 'fields' => 'ids' ) ) );
+		$this->assertSame( $this->post_id, get_post( $this->post_id )->ID );
+	}
 }
