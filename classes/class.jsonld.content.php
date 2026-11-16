@@ -123,6 +123,7 @@ class ODG_JSONLD_Content {
 				}
 				$i++;
 			}
+			wp_reset_postdata();
 			$content = array_merge( $content );
 			return $content;
 		}

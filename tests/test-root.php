@@ -302,4 +302,62 @@ class OpenData_Generator_Test extends WP_UnitTestCase {
 		// Invalid URL should be rejected
 		$this->assertCount( 1, $context );
 	}
+
+	/**
+	 * With no mapping defined, get_schema() returns an empty array (it used to read an
+	 * undefined variable, a warning on PHP 8).
+	 */
+	public function test_mapping_get_schema_without_mappings() {
+		foreach ( get_posts( array( 'post_type' => ODG_Config::NAME, 'posts_per_page' => -1, 'fields' => 'ids' ) ) as $id ) {
+			wp_delete_post( $id, true );
+		}
+
+		$mapping = new ODG_Ep_Mapping();
+		$this->assertSame( array(), $mapping->get_schema() );
+	}
+
+	/**
+	 * Every mapping applies, not only the 10 newest.
+	 */
+	public function test_mapping_get_schema_returns_more_than_ten_mappings() {
+		for ( $i = 0; $i < 11; $i++ ) {
+			$id = $this->factory->post->create(
+				array(
+					'post_title'  => 'Type' . $i,
+					'post_type'   => ODG_Config::NAME,
+					'post_status' => 'publish',
+				)
+			);
+			add_post_meta( $id, 'schema:prop' . $i, 'prop' . $i );
+		}
+
+		$mapping = new ODG_Ep_Mapping();
+		$this->assertCount( 12, $mapping->get_schema() );
+	}
+
+	/**
+	 * The context endpoint is JSON: IRIs must not be HTML-escaped.
+	 */
+	public function test_context_iri_is_not_html_escaped() {
+		update_option( 'odg-context', array( array( 'type' => 'ex', 'iri' => 'http://example.com/vocab?a=1&b=2' ) ) );
+
+		$decoded = json_decode( ( new ODG_Ep_Schema() )->get_context(), true );
+		$this->assertSame( 'http://example.com/vocab?a=1&b=2', $decoded['@context'] );
+	}
+
+	/**
+	 * Building JSON-LD must not leave the global $post pointing at the last queried post.
+	 */
+	public function test_get_content_restores_global_post() {
+		global $post;
+		$other = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$this->go_to( get_permalink( $other ) );
+		// wp_reset_postdata() restores the main query's post, as on a real request.
+		$post = $GLOBALS['wp_query']->post;
+		$this->assertSame( $other, $post->ID );
+
+		$this->get_public_content();
+
+		$this->assertSame( $other, $GLOBALS['post']->ID );
+	}
 }

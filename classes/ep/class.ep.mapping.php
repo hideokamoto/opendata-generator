@@ -2,6 +2,7 @@
 class ODG_Ep_Mapping {
 
 	public function get_schema() {
+		$schema   = array();
 		$Mappings = $this->get_mappings();
 		if ( $Mappings->have_posts() ) {
 			$i = 0;
@@ -16,13 +17,16 @@ class ODG_Ep_Mapping {
 				$schema[ $i ]['@type'] = get_the_title();
 				$i++;
 			}
+			wp_reset_postdata();
 		}
 		return $schema;
 	}
 
 	public function get_mappings() {
 		$map_arg = array(
-			'post_type' => ODG_Config::NAME,
+			'post_type'      => ODG_Config::NAME,
+			// Every mapping applies; the WP_Query default of 10 silently dropped the rest.
+			'posts_per_page' => -1,
 		);
 		$Mappings = new WP_Query( $map_arg );
 		return $Mappings;

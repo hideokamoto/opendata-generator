@@ -150,8 +150,6 @@ class Opendata_generator {
 	 * データの表示処理
 	 */
 	public function odg_redirect() {
-		header( 'Access-Control-Allow-Origin: *' );
-
 		global $wp_query;
 		if ( in_array( 'odg-jsonld' , $wp_query->query ) || isset( $wp_query->query['odg-jsonld'] ) ) {
 			$this->get_content();
@@ -170,7 +168,8 @@ class Opendata_generator {
 				throw new Exception( 'No mapping schema defined' );
 			}
 
-			//Set Content Type
+			//Set Content Type. CORS is opened for the JSON-LD endpoints only, not for every front-end page.
+			header( 'Access-Control-Allow-Origin: *' );
 			header( 'Content-type: application/ld+json; charset=UTF-8' );
 
 			//Get Content(JSON-LD)
@@ -216,7 +215,8 @@ class Opendata_generator {
 				throw new Exception( 'Context generation failed' );
 			}
 
-			//Set Content Type
+			//Set Content Type. CORS is opened for the JSON-LD endpoints only, not for every front-end page.
+			header( 'Access-Control-Allow-Origin: *' );
 			header( 'Content-type: application/ld+json; charset=UTF-8' );
 
 			//Show JSON-LD
