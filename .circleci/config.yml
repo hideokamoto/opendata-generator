@@ -1,0 +1,89 @@
+version: 2.1
+
+# Release to the WordPress.org plugin directory.
+#
+#   Pushing a tag such as 3.0.3 or v3.0.3 (or publishing a GitHub Release,
+#   which creates the tag) runs `deploy`. Every other push runs `dry-run`,
+#   which shows what the next release would change in SVN without
+#   committing and without any credentials.
+#
+# The deploy steps live in .circleci/wporg-deploy.sh; no orb is used, so
+# nothing outside this repository runs with the SVN password.
+# PHPUnit stays in .github/workflows/phpunit.yml.
+
+executors:
+  svn:
+    docker:
+      # cimg/base 2026.11 (Ubuntu 24.04), pinned by digest so the image cannot
+      # change underneath the job. Update the tag and digest together.
+      - image: cimg/base:2026.11@sha256:4e57f523172e8f5bbf9cb57393b80c964ac0e6c75ee70ebd8c980d11bb503c01
+    resource_class: small
+    environment:
+      SLUG: opendata-generator
+      PLUGIN_FILE: opendata-generator.php
+      OUT_DIR: /tmp/wporg-out
+
+commands:
+  install-tools:
+    steps:
+      - run:
+          name: Install Subversion and rsync
+          command: |
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq subversion rsync zip >/dev/null
+            svn --version --quiet
+
+jobs:
+  dry-run:
+    executor: svn
+    steps:
+      - checkout
+      - install-tools
+      - run:
+          name: Show what a release would change on WordPress.org
+          command: DRY_RUN=true bash .circleci/wporg-deploy.sh
+      - store_artifacts:
+          path: /tmp/wporg-out
+          destination: release
+
+  deploy:
+    executor: svn
+    steps:
+      - checkout
+      - run:
+          name: Refuse tags that are not on master
+          command: |
+            if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+              git fetch --quiet --unshallow origin
+            fi
+            git fetch --quiet origin master
+            if ! git merge-base --is-ancestor "$CIRCLE_SHA1" FETCH_HEAD; then
+              echo "✗ $CIRCLE_TAG points at a commit that is not on master." >&2
+              exit 1
+            fi
+      - install-tools
+      - run:
+          name: Deploy to WordPress.org
+          command: bash .circleci/wporg-deploy.sh
+      - store_artifacts:
+          path: /tmp/wporg-out
+          destination: release
+
+workflows:
+  wordpress-org:
+    jobs:
+      - dry-run:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
+      - deploy:
+          # Holds SVN_USERNAME and SVN_PASSWORD. Create it in
+          # Organization Settings > Contexts; see the PR description.
+          context: wordpress-org-svn
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v?[0-9]+\.[0-9]+\.[0-9]+$/
