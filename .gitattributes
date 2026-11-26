@@ -1,0 +1,25 @@
+# Files left out of the release zip and of WordPress.org trunk/ and tags/.
+# The release pipeline (circleci-configurations' wordpress-plugin-github-release.yaml)
+# builds the zip with `git archive`, which skips paths marked export-ignore.
+# Based on .svnignore, plus the files added since it was written.
+/.github export-ignore
+/.circleci export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/.svnignore export-ignore
+/.editorconfig export-ignore
+/.wordpress-org export-ignore
+/bin export-ignore
+/tests export-ignore
+/phpunit.xml export-ignore
+/phpunit.xml.dist export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore
+/vendor export-ignore
+/node_modules export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/Gruntfile.js export-ignore
+/gulpfile.js export-ignore
+/Makefile export-ignore
+/README.md export-ignore
