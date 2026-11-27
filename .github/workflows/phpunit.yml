@@ -42,7 +42,13 @@ jobs:
           coverage: none
           tools: composer
       # bin/install-wp-tests.sh checks out the WordPress test library with svn.
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq subversion
+      # The runner image also lists packages.microsoft.com as an apt source. When that repository
+      # answers 403, `apt-get update` fails before any test runs. Subversion comes from the Ubuntu
+      # archive, so drop the Microsoft sources first.
+      - run: |
+          sudo find /etc/apt/sources.list.d -type f -exec grep -q 'packages.microsoft.com' {} \; -print -delete
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq subversion
       - run: composer install --no-interaction --no-progress
       - run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 ${{ matrix.wp }}
       - run: vendor/bin/phpunit
